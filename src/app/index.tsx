@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useAuth } from '@/context/auth-context';
 import { useBoardContext } from '@/context/board-context';
 import { PromptInput } from '@/components/prompt-input';
 import { ConceptBoardDisplay } from '@/components/concept-board-display';
@@ -13,6 +20,7 @@ import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 
 function HomeScreenInner() {
   const insets = useSafeAreaInsets();
+  const { user, signOut } = useAuth();
   const { status, currentBoard, error, generateBoard, saveCurrentBoard } = useBoardContext();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -39,14 +47,28 @@ function HomeScreenInner() {
         ]}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Brand */}
-        <View style={styles.brand}>
-          <ThemedText type="title" style={styles.logoText}>
-            PromptViz
-          </ThemedText>
-          <ThemedText themeColor="textSecondary" style={styles.tagline}>
-            Turn any idea into a visual concept board
-          </ThemedText>
+        {/* Header: user greeting + sign-out */}
+        <View style={styles.header}>
+          <View style={styles.greeting}>
+            <ThemedText type="subtitle">
+              {user ? `Hi, ${user.displayName}` : 'Hi there'}
+            </ThemedText>
+            <ThemedText themeColor="textSecondary" style={styles.subtitle}>
+              What would you like to create today?
+            </ThemedText>
+          </View>
+          {user && (
+            <Pressable
+              onPress={signOut}
+              style={({ pressed }) => [styles.signOutBtn, pressed && { opacity: 0.7 }]}
+              accessibilityRole="button"
+              accessibilityLabel="Sign out"
+            >
+              <ThemedText type="small" style={styles.signOutText}>
+                Sign out
+              </ThemedText>
+            </Pressable>
+          )}
         </View>
 
         {/* Prompt input */}
@@ -107,19 +129,27 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     gap: Spacing.four,
   },
-  brand: {
+  header: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  greeting: {
     gap: Spacing.one,
-    paddingTop: Spacing.two,
   },
-  logoText: {
-    fontSize: 36,
-    lineHeight: 42,
-    letterSpacing: -1,
-  },
-  tagline: {
-    textAlign: 'center',
+  subtitle: {
     fontSize: 14,
+  },
+  signOutBtn: {
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.one,
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+  },
+  signOutText: {
+    color: '#6b7280',
+    fontSize: 13,
   },
   center: {
     alignItems: 'center',
