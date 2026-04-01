@@ -1,33 +1,41 @@
 import React, { useCallback } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useAuth } from '@/context/auth-context';
 import { useBoardContext } from '@/context/board-context';
 import { BoardCard } from '@/components/board-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
 
-/* ─── Login prompt button (SAN-15) ─────────────────────────────────────────── */
+/* ─── Login prompt / user badge (SAN-15 / SAN-21) ───────────────────────────── */
 
-function LoginPrompt() {
-  const handleLogin = useCallback(() => {
-    Alert.alert(
-      'Sign in coming soon',
-      'Cloud sync and account features will be available in a future update.',
-      [{ text: 'OK' }],
-    );
-  }, []);
+function AuthButton() {
+  const router = useRouter();
+  const { user, signOut } = useAuth();
+
+  const handlePress = useCallback(() => {
+    if (user) {
+      Alert.alert('Sign out?', 'You will be logged out of your account.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign out', style: 'destructive', onPress: signOut },
+      ]);
+    } else {
+      void router.push('/login');
+    }
+  }, [user, signOut, router]);
 
   return (
     <Pressable
       style={({ pressed }) => [styles.loginButton, pressed && { opacity: 0.8 }]}
-      onPress={handleLogin}
+      onPress={handlePress}
       accessibilityRole="button"
-      accessibilityLabel="Sign in or create an account"
+      accessibilityLabel={user ? 'Sign out' : 'Sign in or create an account'}
     >
       <ThemedText type="smallBold" style={styles.loginButtonText}>
-        Sign in / Create Account
+        {user ? `Hi, ${user.displayName}` : 'Sign in / Create Account'}
       </ThemedText>
     </Pressable>
   );
@@ -75,7 +83,7 @@ export default function ExploreScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingBottom: Spacing.three }]}>
         <ThemedText type="subtitle">Explore</ThemedText>
-        <LoginPrompt />
+        <AuthButton />
       </View>
 
       {/* Board list */}
