@@ -1,181 +1,139 @@
-import { Image } from 'expo-image';
-import { SymbolView } from 'expo-symbols';
-import React from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
+import React, { useCallback } from 'react';
+import { Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ExternalLink } from '@/components/external-link';
+import { useBoardContext } from '@/context/board-context';
+import { BoardCard } from '@/components/board-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Collapsible } from '@/components/ui/collapsible';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { BottomTabInset, Spacing } from '@/constants/theme';
 
-export default function TabTwoScreen() {
-  const safeAreaInsets = useSafeAreaInsets();
-  const insets = {
-    ...safeAreaInsets,
-    bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
-  };
-  const theme = useTheme();
+/* ─── Login prompt button (SAN-15) ─────────────────────────────────────────── */
 
-  const contentPlatformStyle = Platform.select({
-    android: {
-      paddingTop: insets.top,
-      paddingLeft: insets.left,
-      paddingRight: insets.right,
-      paddingBottom: insets.bottom,
-    },
-    web: {
-      paddingTop: Spacing.six,
-      paddingBottom: Spacing.four,
-    },
-  });
+function LoginPrompt() {
+  const handleLogin = useCallback(() => {
+    Alert.alert(
+      'Sign in coming soon',
+      'Cloud sync and account features will be available in a future update.',
+      [{ text: 'OK' }],
+    );
+  }, []);
 
   return (
-    <ScrollView
-      style={[styles.scrollView, { backgroundColor: theme.background }]}
-      contentInset={insets}
-      contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="subtitle">Explore</ThemedText>
-          <ThemedText style={styles.centerText} themeColor="textSecondary">
-            This starter app includes example{'\n'}code to help you get started.
-          </ThemedText>
-
-          <ExternalLink href="https://docs.expo.dev" asChild>
-            <Pressable style={({ pressed }) => pressed && styles.pressed}>
-              <ThemedView type="backgroundElement" style={styles.linkButton}>
-                <ThemedText type="link">Expo documentation</ThemedText>
-                <SymbolView
-                  tintColor={theme.text}
-                  name={{ ios: 'arrow.up.right.square', android: 'link', web: 'link' }}
-                  size={12}
-                />
-              </ThemedView>
-            </Pressable>
-          </ExternalLink>
-        </ThemedView>
-
-        <ThemedView style={styles.sectionsWrapper}>
-          <Collapsible title="File-based routing">
-            <ThemedText type="small">
-              This app has two screens: <ThemedText type="code">src/app/index.tsx</ThemedText> and{' '}
-              <ThemedText type="code">src/app/explore.tsx</ThemedText>
-            </ThemedText>
-            <ThemedText type="small">
-              The layout file in <ThemedText type="code">src/app/_layout.tsx</ThemedText> sets up
-              the tab navigator.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/router/introduction">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Android, iOS, and web support">
-            <ThemedView type="backgroundElement" style={styles.collapsibleContent}>
-              <ThemedText type="small">
-                You can open this project on Android, iOS, and the web. To open the web version,
-                press <ThemedText type="smallBold">w</ThemedText> in the terminal running this
-                project.
-              </ThemedText>
-              <Image
-                source={require('@/assets/images/tutorial-web.png')}
-                style={styles.imageTutorial}
-              />
-            </ThemedView>
-          </Collapsible>
-
-          <Collapsible title="Images">
-            <ThemedText type="small">
-              For static images, you can use the <ThemedText type="code">@2x</ThemedText> and{' '}
-              <ThemedText type="code">@3x</ThemedText> suffixes to provide files for different
-              screen densities.
-            </ThemedText>
-            <Image source={require('@/assets/images/react-logo.png')} style={styles.imageReact} />
-            <ExternalLink href="https://reactnative.dev/docs/images">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Light and dark mode components">
-            <ThemedText type="small">
-              This template has light and dark mode support. The{' '}
-              <ThemedText type="code">useColorScheme()</ThemedText> hook lets you inspect what the
-              user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Animations">
-            <ThemedText type="small">
-              This template includes an example of an animated component. The{' '}
-              <ThemedText type="code">src/components/ui/collapsible.tsx</ThemedText> component uses
-              the powerful <ThemedText type="code">react-native-reanimated</ThemedText> library to
-              animate opening this hint.
-            </ThemedText>
-          </Collapsible>
-        </ThemedView>
-        {Platform.OS === 'web' && <WebBadge />}
-      </ThemedView>
-    </ScrollView>
+    <Pressable
+      style={({ pressed }) => [styles.loginButton, pressed && { opacity: 0.8 }]}
+      onPress={handleLogin}
+      accessibilityRole="button"
+      accessibilityLabel="Sign in or create an account"
+    >
+      <ThemedText type="smallBold" style={styles.loginButtonText}>
+        Sign in / Create Account
+      </ThemedText>
+    </Pressable>
   );
 }
 
+/* ─── Empty state ──────────────────────────────────────────────────────────── */
+
+function EmptyState() {
+  return (
+    <View style={styles.empty}>
+      <ThemedText type="subtitle" style={styles.emptyTitle}>
+        No saved boards yet
+      </ThemedText>
+      <ThemedText themeColor="textSecondary" style={styles.emptyText}>
+        Generate a concept board on the Home tab and tap &ldquo;Save Board&rdquo; to see it here.
+      </ThemedText>
+    </View>
+  );
+}
+
+/* ─── Screen ───────────────────────────────────────────────────────────────── */
+
+export default function ExploreScreen() {
+  const insets = useSafeAreaInsets();
+  const { savedBoards, deleteBoard } = useBoardContext();
+
+  const handleDelete = useCallback(
+    async (id: string) => {
+      Alert.alert('Delete board?', 'This cannot be undone.', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteBoard(id);
+          },
+        },
+      ]);
+    },
+    [deleteBoard],
+  );
+
+  return (
+    <ThemedView style={[styles.root, { paddingTop: insets.top }]}>
+      {/* Header */}
+      <View style={[styles.header, { paddingBottom: Spacing.three }]}>
+        <ThemedText type="subtitle">Explore</ThemedText>
+        <LoginPrompt />
+      </View>
+
+      {/* Board list */}
+      <FlatList
+        data={savedBoards}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <BoardCard board={item} onDelete={handleDelete} />}
+        ListEmptyComponent={<EmptyState />}
+        contentContainerStyle={[
+          styles.list,
+          { paddingBottom: insets.bottom + BottomTabInset + Spacing.three },
+        ]}
+        ItemSeparatorComponent={() => <View style={{ height: Spacing.two }} />}
+      />
+    </ThemedView>
+  );
+}
+
+/* ─── Styles ───────────────────────────────────────────────────────────────── */
+
 const styles = StyleSheet.create({
-  scrollView: {
+  root: {
     flex: 1,
   },
-  contentContainer: {
+  header: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.four,
+    gap: Spacing.two,
   },
-  container: {
-    maxWidth: MaxContentWidth,
+  loginButton: {
+    backgroundColor: '#208AEF',
+    borderRadius: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+  loginButtonText: {
+    color: '#ffffff',
+  },
+  list: {
+    paddingHorizontal: Spacing.three,
     flexGrow: 1,
   },
-  titleContainer: {
-    gap: Spacing.three,
+  empty: {
+    flex: 1,
     alignItems: 'center',
-    paddingHorizontal: Spacing.four,
+    justifyContent: 'center',
     paddingVertical: Spacing.six,
+    paddingHorizontal: Spacing.four,
+    gap: Spacing.two,
   },
-  centerText: {
+  emptyTitle: {
     textAlign: 'center',
   },
-  pressed: {
-    opacity: 0.7,
-  },
-  linkButton: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.five,
-    justifyContent: 'center',
-    gap: Spacing.one,
-    alignItems: 'center',
-  },
-  sectionsWrapper: {
-    gap: Spacing.five,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-  },
-  collapsibleContent: {
-    alignItems: 'center',
-  },
-  imageTutorial: {
-    width: '100%',
-    aspectRatio: 296 / 171,
-    borderRadius: Spacing.three,
-    marginTop: Spacing.two,
-  },
-  imageReact: {
-    width: 100,
-    height: 100,
-    alignSelf: 'center',
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 14,
   },
 });

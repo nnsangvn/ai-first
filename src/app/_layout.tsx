@@ -4,13 +4,16 @@ import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
+import { BoardProvider } from '@/context/board-context';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
+      <BoardProvider>
+        <AnimatedSplashOverlay />
+        <AppTabs />
+      </BoardProvider>
     </ThemeProvider>
   );
 }
